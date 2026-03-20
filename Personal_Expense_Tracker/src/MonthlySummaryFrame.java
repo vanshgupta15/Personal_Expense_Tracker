@@ -61,7 +61,7 @@ public class MonthlySummaryFrame extends JFrame
             }
             catch (Exception ex) 
             {
-                JOptionPane.showMessageDialog(this, "❌ Invalid Input!");
+                JOptionPane.showMessageDialog(this, "Invalid Input!");
             }
         });
         panel.add(createLabel("Enter Month (1-12):"));
