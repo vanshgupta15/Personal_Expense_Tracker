@@ -1,81 +1,95 @@
 import java.awt.*;
 import javax.swing.*;
-public class AddIncomeFrame extends JFrame 
-{
-    public AddIncomeFrame(ExpenseManager manager) 
-    {
+
+public class AddIncomeFrame extends JFrame {
+    public AddIncomeFrame(ExpenseManager manager) {
         setTitle("Add Income");
-        setSize(400, 300);
+        setSize(450, 400);
         setLocationRelativeTo(null);
-        // Main Panel
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(6, 2, 10, 10));
-        panel.setBackground(new Color(46, 204, 113)); // Green Theme
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        Theme.applyBaseTheme(this);
+
+        // Main Container
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
+        mainPanel.setBackground(Theme.BACKGROUND);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+
+        // Header Label
+        JLabel headerLabel = Theme.createLabel("➕ Record Income", Theme.FONT_TITLE, Theme.INCOME_COLOR);
+        headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(headerLabel, BorderLayout.NORTH);
+
+        // Form Panel (Card styling)
+        JPanel formPanel = Theme.createCardPanel();
+        formPanel.setLayout(new GridLayout(5, 2, 15, 15));
+
         // Fields
-        JTextField titleField = new JTextField();
-        JTextField amountField = new JTextField();
+        JTextField titleField = Theme.createTextField();
+        JTextField amountField = Theme.createTextField();
         String[] categories = {"Salary", "Business", "Investment", "Other"};
-        JComboBox<String> categoryBox = new JComboBox<>(categories);
-        JTextField monthField = new JTextField();
-        JTextField yearField = new JTextField();
-        JButton addButton = new JButton("Add Income");
-        addButton.setBackground(Color.WHITE);
-        addButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JComboBox<String> categoryBox = Theme.createComboBox(categories);
+        JTextField monthField = Theme.createTextField();
+        JTextField yearField = Theme.createTextField();
+
         // Labels
-        JLabel l1 = createLabel("Title:");
-        JLabel l2 = createLabel("Amount:");
-        JLabel l3 = createLabel("Category:");
-        JLabel l4 = createLabel("Month:");
-        JLabel l5 = createLabel("Year:");
+        formPanel.add(Theme.createLabel("Title:", Theme.FONT_BOLD, Theme.TEXT_PRIMARY));
+        formPanel.add(titleField);
+        formPanel.add(Theme.createLabel("Amount (₹):", Theme.FONT_BOLD, Theme.TEXT_PRIMARY));
+        formPanel.add(amountField);
+        formPanel.add(Theme.createLabel("Category:", Theme.FONT_BOLD, Theme.TEXT_PRIMARY));
+        formPanel.add(categoryBox);
+        formPanel.add(Theme.createLabel("Month (1-12):", Theme.FONT_BOLD, Theme.TEXT_PRIMARY));
+        formPanel.add(monthField);
+        formPanel.add(Theme.createLabel("Year:", Theme.FONT_BOLD, Theme.TEXT_PRIMARY));
+        formPanel.add(yearField);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+
+        // Button
+        JButton addButton = Theme.createButton("Add Income", Theme.INCOME_COLOR);
+        
         // Action
-        addButton.addActionListener(e -> 
-            {
-            try 
-            {
-                String title = titleField.getText();
-                double amount = Double.parseDouble(amountField.getText());
+        addButton.addActionListener(e -> {
+            try {
+                String title = titleField.getText().trim();
+                if (title.isEmpty()) {
+                    showError("Title cannot be empty");
+                    return;
+                }
+                double amount = Double.parseDouble(amountField.getText().trim());
                 String category = (String) categoryBox.getSelectedItem();
-                int month = Integer.parseInt(monthField.getText());
-                int year = Integer.parseInt(yearField.getText());
-                if (title.isEmpty()) 
-                {
-                    JOptionPane.showMessageDialog(this, "Title cannot be empty");
+                int month = Integer.parseInt(monthField.getText().trim());
+                int year = Integer.parseInt(yearField.getText().trim());
+
+                if (month < 1 || month > 12) {
+                    showError("Enter a valid month (1-12)");
                     return;
                 }
-                if (month < 1 || month > 12) 
-                {
-                    JOptionPane.showMessageDialog(this, "⚠ Enter valid month (1-12)");
-                    return;
-                }
+                
                 manager.addIncome(title, amount, category, month, year);
-                JOptionPane.showMessageDialog(this, "Income Added Successfully!");
-                // Clear fields
-                titleField.setText("");
-                amountField.setText("");
-                monthField.setText("");
-                yearField.setText("");
-            } catch (Exception ex) 
-            {
-                JOptionPane.showMessageDialog(this, "❌ Invalid Input!");
+                
+                JOptionPane.showMessageDialog(this, "✅ Income Added Successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose(); // Close form after success instead of just clearing
+                
+            } catch (NumberFormatException ex) {
+                showError("Invalid Number Format! Please check Amounts and Dates.");
+            } catch (Exception ex) {
+                showError("An error occurred: " + ex.getMessage());
             }
         });
-        // Add Components
-        panel.add(l1); panel.add(titleField);
-        panel.add(l2); panel.add(amountField);
-        panel.add(l3); panel.add(categoryBox);
-        panel.add(l4); panel.add(monthField);
-        panel.add(l5); panel.add(yearField);
-        panel.add(new JLabel("")); panel.add(addButton);
-        add(panel);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Theme.BACKGROUND);
+        buttonPanel.add(addButton);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
         setVisible(true);
     }
-    // Styled Label
-    private JLabel createLabel(String text) 
-    {
-        JLabel label = new JLabel(text);
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Arial", Font.BOLD, 13));
-        return label;
+    
+    private void showError(String message) {
+        UIManager.put("OptionPane.background", Theme.CARD_BACKGROUND);
+        UIManager.put("Panel.background", Theme.CARD_BACKGROUND);
+        UIManager.put("OptionPane.messageForeground", Theme.TEXT_PRIMARY);
+        JOptionPane.showMessageDialog(this, "⚠ " + message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
